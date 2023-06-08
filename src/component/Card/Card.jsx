@@ -1,25 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import SingleData from '../SingleData/SingleData';
 import Button from '../Header/Button/Button';
+import Modal from '../Modal/Modal';
 
 const Card = () => {
     // state lifting- 2 componants are sharing same info
     const [data, setData] = useState([]);
+    const [singleData, setSingleData]=useState({});
     const [showAll, setShowAll]=useState(false);
+    const [uniqueId, setUniqueId]=useState(null);
+
 
     // useState will be true after onClick
     const handleShowAll = () =>{
         setShowAll(true);
     }
+
+    useEffect(()=>{
+        console.log("hello useEffect");
+        fetch(`https://openapi.programming-hero.com/api/ai/tool/${uniqueId}`)
+        .then(res=>res.json())
+        .then((data)=>setSingleData(data.data))
+    },[uniqueId])
+
     useEffect(()=>{
         const loadData = async() => {
             const res= await fetch('https://openapi.programming-hero.com/api/ai/tools');
             const value= await res.json();
-            console.log(value.data.tools);
+            // console.log(value.data.tools);
             setData(value.data.tools);
         } 
         loadData();
     },[]);
+    // console.log(singleData);
 
     return (
         <>
@@ -35,7 +48,12 @@ const Card = () => {
 
                 // single line e call
                 data.slice(0,showAll? 12:6).map((singleData) =>(
-                <SingleData singleData={singleData} key={singleData.id}></SingleData>))
+                <SingleData 
+                singleData={singleData} 
+                key={singleData.id} 
+                setUniqueId={setUniqueId}>
+
+                </SingleData>))
             }
             </div>
 
@@ -45,6 +63,8 @@ const Card = () => {
                     <Button>See More</Button>
                     </span>)
             }
+            {/* calling modal from its parent cmponent to avoid unnecessary rendering */}
+            <Modal singleData={singleData}></Modal>
         </>
     );
 };
